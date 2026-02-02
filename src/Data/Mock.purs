@@ -51,15 +51,25 @@ mockPackages =
   , "web-dom"
   ]
 
--- | Compiler versions (newest first)
+-- | Compiler versions (newest first), spanning multiple major versions
 mockCompilers :: Array String
 mockCompilers =
+  -- 0.15.x (6 versions)
   [ "0.15.15"
   , "0.15.14"
   , "0.15.10"
   , "0.15.9"
   , "0.15.7"
   , "0.15.4"
+  -- 0.14.x (4 versions)
+  , "0.14.9"
+  , "0.14.7"
+  , "0.14.5"
+  , "0.14.0"
+  -- 0.13.x (3 versions)
+  , "0.13.8"
+  , "0.13.6"
+  , "0.13.0"
   ]
 
 -- | Generate the mock compatibility matrix
@@ -76,40 +86,40 @@ mockMatrix =
 
 -- | Mock matrix values
 -- | 1.0 = compatible, 0.0 = failed, 0.5 = untested
+-- | Columns: 0.15.15, 0.15.14, 0.15.10, 0.15.9, 0.15.7, 0.15.4 | 0.14.9, 0.14.7, 0.14.5, 0.14.0 | 0.13.8, 0.13.6, 0.13.0
 mockValues :: Array (Array Number)
 mockValues =
-  -- Each row is a package, each column is a compiler version
-  -- Columns: 0.15.15, 0.15.14, 0.15.10, 0.15.9, 0.15.7, 0.15.4
-  [ [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- prelude: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- effect: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- console: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- arrays: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- maybe: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- either: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- tuples: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- strings: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- foldable-traversable: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- transformers: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- aff: always works
-  , [1.0, 1.0, 1.0, 1.0, 0.0, 0.0]  -- halogen: newer only
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 0.5]  -- argonaut: mostly works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- foreign: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 0.5]  -- node-fs: mostly works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 0.5]  -- node-buffer: mostly works
-  , [1.0, 1.0, 1.0, 0.0, 0.0, 0.0]  -- http: recent only
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- quickcheck: always works
-  , [1.0, 1.0, 1.0, 1.0, 0.5, 0.5]  -- spec: mostly recent
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 0.5]  -- parsing: mostly works
-  , [1.0, 1.0, 0.0, 0.0, 0.0, 0.0]  -- routing: very new
-  , [1.0, 1.0, 1.0, 1.0, 0.5, 0.5]  -- codec: recent focus
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- datetime: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- ordered-collections: always works
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- profunctor: always works
-  , [1.0, 1.0, 1.0, 1.0, 0.5, 0.0]  -- variant: recent
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 0.5]  -- record: mostly works
-  , [1.0, 1.0, 0.0, 0.0, 0.0, 0.0]  -- affjax: recent rewrite
-  , [1.0, 1.0, 1.0, 0.5, 0.0, 0.0]  -- yoga-json: newer package
-  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  -- web-dom: always works
+  --           |-------- 0.15.x --------|  |---- 0.14.x ----|  |-- 0.13.x --|
+  [ [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- prelude: always works
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- effect: always works
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- console: always works
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- arrays: always works
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- maybe: always works
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- either: always works
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- tuples: always works
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- strings: always works
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- foldable-traversable
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 0.5]  -- transformers
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 0.5,  0.0, 0.0, 0.0]  -- aff: 0.14+ only
+  , [1.0, 1.0, 1.0, 1.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0]  -- halogen: 0.15.9+ only
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 0.5,  1.0, 1.0, 0.5, 0.0,  0.0, 0.0, 0.0]  -- argonaut
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- foreign: always works
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 0.5,  1.0, 1.0, 0.5, 0.5,  0.0, 0.0, 0.0]  -- node-fs
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 0.5,  1.0, 1.0, 0.5, 0.5,  0.0, 0.0, 0.0]  -- node-buffer
+  , [1.0, 1.0, 1.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0]  -- http: very recent
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- quickcheck
+  , [1.0, 1.0, 1.0, 1.0, 0.5, 0.5,  0.5, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0]  -- spec: recent
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 0.5,  1.0, 1.0, 1.0, 0.5,  0.5, 0.0, 0.0]  -- parsing
+  , [1.0, 1.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0]  -- routing: very new
+  , [1.0, 1.0, 1.0, 1.0, 0.5, 0.5,  0.5, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0]  -- codec: recent
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- datetime
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 0.5]  -- ordered-collections
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 0.5, 0.0]  -- profunctor
+  , [1.0, 1.0, 1.0, 1.0, 0.5, 0.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0]  -- variant: recent
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 0.5,  1.0, 0.5, 0.0, 0.0,  0.0, 0.0, 0.0]  -- record
+  , [1.0, 1.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0]  -- affjax: recent rewrite
+  , [1.0, 1.0, 1.0, 0.5, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0]  -- yoga-json: new
+  , [1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0]  -- web-dom
   ]
 
 -- | Mock matrix jobs simulating recent build activity
@@ -146,7 +156,7 @@ mockJobs =
                  else if statusVal <= 0.25 then Failed
                  else Untested
       in
-        { id: pkgIdx * 10 + compIdx
+        { id: pkgIdx * 100 + compIdx  -- Increased multiplier for more compilers
         , package: pkg
         , compiler
         , status

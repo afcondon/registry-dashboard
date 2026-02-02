@@ -1,7 +1,7 @@
 -- | Component.Matrix
 -- |
 -- | Halogen component wrapper for the compiler compatibility matrix.
--- | Uses HATS (via Viz.CompilerMatrix) for the actual SVG rendering.
+-- | Manages expand/collapse state for version groups.
 module Component.Matrix
   ( component
   , Input
@@ -13,12 +13,15 @@ module Component.Matrix
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Data.Types (CompatibilityMatrix)
+import Data.Set (Set)
+import Data.Set as Set
+import Data.Types (CompatibilityMatrix, MajorVersion)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (liftEffect)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
+import Halogen.Subscription as HS
 import Viz.CompilerMatrix as Matrix
 
 -- | Component types
@@ -33,6 +36,7 @@ type Slot = H.Slot Query Output
 -- | Internal state
 type State =
   { matrix :: CompatibilityMatrix
+  , expanded :: Set MajorVersion
   , initialized :: Boolean
   }
 
@@ -40,6 +44,7 @@ type State =
 data Action
   = Initialize
   | Receive Input
+  | ToggleGroup MajorVersion
 
 -- | The Matrix component
 component :: forall m. MonadAff m => H.Component Query Input Output m
@@ -56,25 +61,22 @@ component = H.mkComponent
 initialState :: Input -> State
 initialState matrix =
   { matrix
+  , expanded: Set.empty
   , initialized: false
   }
 
--- | Render just a container div - HATS will render the SVG into it
 render :: forall m. State -> H.ComponentHTML Action () m
 render _state =
   HH.div
     [ HP.class_ (HH.ClassName "matrix-container") ]
-    [ -- Container for HATS-rendered SVG
-      HH.div
+    [ HH.div
         [ HP.id "matrix-svg-container"
         , HP.class_ (HH.ClassName "matrix-svg-wrapper")
         ]
         []
-    , -- Legend
-      renderLegend
+    , renderLegend
     ]
 
--- | Render the legend
 renderLegend :: forall m. H.ComponentHTML Action () m
 renderLegend =
   HH.div
@@ -82,22 +84,40 @@ renderLegend =
     [ HH.span [ HP.class_ (HH.ClassName "legend-item compatible") ] [ HH.text "Compatible" ]
     , HH.span [ HP.class_ (HH.ClassName "legend-item untested") ] [ HH.text "Untested" ]
     , HH.span [ HP.class_ (HH.ClassName "legend-item failed") ] [ HH.text "Failed" ]
+    , HH.span [ HP.class_ (HH.ClassName "legend-hint") ] [ HH.text "Click version headers to expand/collapse" ]
     ]
 
--- | Handle component actions
 handleAction :: forall m. MonadAff m => Action -> H.HalogenM State Action () Output m Unit
 handleAction = case _ of
   Initialize -> do
     state <- H.get
-    renderMatrix state.matrix
+    let config = Matrix.defaultConfig { containerSelector = "#matrix-svg-container" }
+
+    -- Create emitter for group toggle events
+    { emitter, listener } <- liftEffect HS.create
+
+    -- Subscribe to toggle events
+    _ <- H.subscribe emitter
+
+    -- Set up click handlers that notify the emitter
+    liftEffect $ Matrix.setupClickHandlers config \major ->
+      HS.notify listener (ToggleGroup major)
+
+    -- Initial render
+    liftEffect $ Matrix.render config state.matrix state.expanded
     H.modify_ _ { initialized = true }
 
   Receive matrix -> do
+    state <- H.get
     H.modify_ _ { matrix = matrix }
-    renderMatrix matrix
+    let config = Matrix.defaultConfig { containerSelector = "#matrix-svg-container" }
+    liftEffect $ Matrix.render config matrix state.expanded
 
--- | Render the matrix using HATS
-renderMatrix :: forall m. MonadAff m => CompatibilityMatrix -> H.HalogenM State Action () Output m Unit
-renderMatrix matrix = do
-  let config = Matrix.defaultConfig { containerSelector = "#matrix-svg-container" }
-  liftEffect $ Matrix.render config matrix
+  ToggleGroup major -> do
+    state <- H.get
+    let newExpanded = if Set.member major state.expanded
+                      then Set.delete major state.expanded
+                      else Set.insert major state.expanded
+    H.modify_ _ { expanded = newExpanded }
+    let config = Matrix.defaultConfig { containerSelector = "#matrix-svg-container" }
+    liftEffect $ Matrix.render config state.matrix newExpanded
