@@ -1,0 +1,40 @@
+workspace:
+  packageSet:
+    registry: 67.0.1
+  extraPackages:
+    hylograph-selection:
+      path: ../../visualisation libraries/purescript-hylograph-selection
+    hylograph-layout:
+      path: ../../visualisation libraries/purescript-hylograph-layout
+    hylograph-graph:
+      path: ../../visualisation libraries/purescript-hylograph-graph
+    hylograph-transitions:
+      path: ../../visualisation libraries/purescript-hylograph-transitions
+    hylograph-simulation:
+      path: ../../visualisation libraries/purescript-hylograph-simulation
+
+package:
+  name: registry-dashboard
+  dependencies:
+    - aff
+    - arrays
+    - effect
+    - foldable-traversable
+    - halogen
+    - halogen-subscriptions
+    - integers
+    - maybe
+    - nullable
+    - numbers
+    - ordered-collections
+    - prelude
+    - refs
+    - strings
+    - tuples
+    - hylograph-layout
+    - hylograph-selection
+    - hylograph-simulation
+  bundle:
+    module: Main
+    outfile: public/bundle.js
+    platform: browser

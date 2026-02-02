@@ -1,0 +1,13 @@
+{
+  "name": "registry-dashboard",
+  "version": "0.1.0",
+  "description": "PureScript Registry Dashboard - Compiler Compatibility Matrix",
+  "scripts": {
+    "build": "spago build",
+    "bundle": "spago bundle",
+    "serve": "npx http-server public -p 8090 -c-1"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

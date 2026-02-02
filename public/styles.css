@@ -1,0 +1,245 @@
+/*
+ * Registry Dashboard Styles
+ * Based on PSD3 house style - clean, minimal "data viz book" aesthetic
+ */
+
+/* ==========================================================================
+   CSS Custom Properties (Theme)
+   ========================================================================== */
+
+:root {
+  /* Brand colors */
+  --psd3-gold: #b8860b;
+  --psd3-gold-light: #daa520;
+  --psd3-gold-dark: #8b6508;
+
+  /* Background colors */
+  --psd3-bg-page: #f8f8f8;
+  --psd3-bg-card: #ffffff;
+  --psd3-bg-subtle: #f0f0f0;
+
+  /* Text colors */
+  --psd3-text-primary: #1a1a1a;
+  --psd3-text-body: #333333;
+  --psd3-text-muted: #666666;
+  --psd3-text-light: #888888;
+
+  /* Border colors */
+  --psd3-border: #e0e0e0;
+  --psd3-border-light: #eeeeee;
+
+  /* Semantic colors */
+  --psd3-link: #2563eb;
+  --color-compatible: #22c55e;
+  --color-failed: #ef4444;
+  --color-untested: #f59e0b;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Spacing */
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  /* Borders */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* ==========================================================================
+   Base Reset
+   ========================================================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--psd3-bg-page);
+  color: var(--psd3-text-body);
+  min-height: 100vh;
+}
+
+a {
+  color: var(--psd3-link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Dashboard Layout
+   ========================================================================== */
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: var(--space-6);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.dashboard-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--psd3-border);
+}
+
+.dashboard-header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--psd3-text-primary);
+  margin-bottom: var(--space-2);
+  letter-spacing: -0.01em;
+}
+
+.dashboard-header .subtitle {
+  font-size: 1rem;
+  color: var(--psd3-text-muted);
+}
+
+/* Main Content */
+.dashboard-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ==========================================================================
+   Matrix Container
+   ========================================================================== */
+
+.matrix-container {
+  background: var(--psd3-bg-card);
+  border: 1px solid var(--psd3-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-card);
+}
+
+.matrix-svg-wrapper {
+  display: block;
+}
+
+/* SVG styling via CSS (cells have class .matrix-cell) */
+.matrix-cell {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.matrix-cell:hover {
+  opacity: 0.8;
+  stroke: var(--psd3-gold);
+  stroke-width: 2px;
+}
+
+/* ==========================================================================
+   Legend
+   ========================================================================== */
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--psd3-border-light);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--psd3-text-muted);
+}
+
+.legend-item::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-sm);
+  margin-right: var(--space-2);
+  border: 1px solid var(--psd3-border);
+}
+
+.legend-item.compatible::before {
+  background: var(--color-compatible);
+}
+
+.legend-item.failed::before {
+  background: var(--color-failed);
+}
+
+.legend-item.untested::before {
+  background: var(--color-untested);
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.dashboard-footer {
+  text-align: center;
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--psd3-border);
+  font-size: 0.875rem;
+  color: var(--psd3-text-muted);
+}
+
+.dashboard-footer a {
+  color: var(--psd3-gold);
+  font-weight: 500;
+}
+
+.dashboard-footer a:hover {
+  color: var(--psd3-gold-dark);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: var(--space-4);
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .matrix-container {
+    padding: var(--space-4);
+    overflow-x: auto;
+  }
+
+  .legend {
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+}

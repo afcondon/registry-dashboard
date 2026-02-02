@@ -1,0 +1,11 @@
+# Build outputs
+output/
+.spago/
+node_modules/
+
+# Bundle is generated
+public/bundle.js
+
+# Lock files (generated)
+spago.lock
+package-lock.json
