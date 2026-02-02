@@ -13,13 +13,14 @@ import Prelude
 
 import Data.Array as Array
 import Data.Foldable (foldl)
-import Data.Maybe (Maybe(..))
 import Data.Int (toNumber)
+import Data.Maybe (Maybe(..))
 import Data.String (joinWith)
 import Effect (Effect)
 
 -- Hylograph HATS Imports
-import Hylograph.HATS (Tree, elem, staticStr, staticNum)
+import Hylograph.HATS (Tree, elem)
+import Hylograph.HATS.Friendly (attr, x, y, x1, y1, x2, y2, width, height, fill, stroke, strokeWidth, d, class_, style, textAnchor, fontSize, transform)
 import Hylograph.HATS.InterpreterTick (rerender, clearContainer)
 import Hylograph.Internal.Selection.Types (ElementType(..))
 
@@ -115,9 +116,9 @@ buildChartTree config timeSeries =
       then padding.left + ((t - minTime) / (maxTime - minTime)) * chartWidth
       else padding.left + chartWidth / 2.0
 
-    scaleY d =
+    scaleY dep =
       if maxDepth > 0
-      then padding.top + chartHeight - (toNumber d / toNumber maxDepth) * chartHeight
+      then padding.top + chartHeight - (toNumber dep / toNumber maxDepth) * chartHeight
       else padding.top + chartHeight
 
     -- Build area path
@@ -128,115 +129,117 @@ buildChartTree config timeSeries =
 
     -- Y-axis ticks
     yTicks = Array.range 0 maxDepth # Array.filter (\n -> n `mod` (max 1 (maxDepth / 4)) == 0)
+
+    vbStr = "0 0 " <> show config.width <> " " <> show config.height
   in
     elem SVG
-      [ staticStr "viewBox" ("0 0 " <> show config.width <> " " <> show config.height)
-      , staticStr "width" "100%"
-      , staticStr "height" (show config.height)
-      , staticStr "preserveAspectRatio" "xMidYMid meet"
-      , staticStr "style" "display: block;"
+      [ attr "viewBox" vbStr
+      , attr "width" "100%"
+      , height config.height
+      , attr "preserveAspectRatio" "xMidYMid meet"
+      , style "display: block;"
       ]
       [ -- Background
         elem Rect
-          [ staticNum "x" padding.left
-          , staticNum "y" padding.top
-          , staticNum "width" chartWidth
-          , staticNum "height" chartHeight
-          , staticStr "fill" "#fafafa"
-          , staticStr "stroke" "#e0e0e0"
-          , staticNum "stroke-width" 1.0
+          [ x padding.left
+          , y padding.top
+          , width chartWidth
+          , height chartHeight
+          , fill "#fafafa"
+          , stroke "#e0e0e0"
+          , strokeWidth 1.0
           ]
           []
       , -- Grid lines
         elem Group
-          [ staticStr "class" "grid" ]
+          [ class_ "grid" ]
           (yTicks <#> \tick ->
             elem Line
-              [ staticNum "x1" padding.left
-              , staticNum "y1" (scaleY tick)
-              , staticNum "x2" (padding.left + chartWidth)
-              , staticNum "y2" (scaleY tick)
-              , staticStr "stroke" "#e8e8e8"
-              , staticNum "stroke-width" 1.0
+              [ x1 padding.left
+              , y1 (scaleY tick)
+              , x2 (padding.left + chartWidth)
+              , y2 (scaleY tick)
+              , stroke "#e8e8e8"
+              , strokeWidth 1.0
               ]
               []
           )
       , -- Area fill
         elem Path
-          [ staticStr "d" areaPath
-          , staticStr "fill" "rgba(184, 134, 11, 0.3)"  -- Gold with transparency
-          , staticStr "stroke" "none"
+          [ d areaPath
+          , fill "rgba(184, 134, 11, 0.3)"  -- Gold with transparency
+          , stroke "none"
           ]
           []
       , -- Line on top
         elem Path
-          [ staticStr "d" linePath
-          , staticStr "fill" "none"
-          , staticStr "stroke" "#b8860b"  -- Gold
-          , staticNum "stroke-width" 2.0
+          [ d linePath
+          , fill "none"
+          , stroke "#b8860b"  -- Gold
+          , strokeWidth 2.0
           ]
           []
       , -- Y-axis
         elem Line
-          [ staticNum "x1" padding.left
-          , staticNum "y1" padding.top
-          , staticNum "x2" padding.left
-          , staticNum "y2" (padding.top + chartHeight)
-          , staticStr "stroke" "#666"
-          , staticNum "stroke-width" 1.0
+          [ x1 padding.left
+          , y1 padding.top
+          , x2 padding.left
+          , y2 (padding.top + chartHeight)
+          , stroke "#666"
+          , strokeWidth 1.0
           ]
           []
       , -- Y-axis labels
         elem Group
-          [ staticStr "class" "y-labels" ]
+          [ class_ "y-labels" ]
           (yTicks <#> \tick ->
             elem Text
-              [ staticNum "x" (padding.left - 8.0)
-              , staticNum "y" (scaleY tick + 4.0)
-              , staticStr "text-anchor" "end"
-              , staticStr "font-size" "11"
-              , staticStr "fill" "#666"
-              , staticStr "textContent" (show tick)
+              [ x (padding.left - 8.0)
+              , y (scaleY tick + 4.0)
+              , textAnchor "end"
+              , fontSize "11"
+              , fill "#666"
+              , attr "textContent" (show tick)
               ]
               []
           )
       , -- X-axis
         elem Line
-          [ staticNum "x1" padding.left
-          , staticNum "y1" (padding.top + chartHeight)
-          , staticNum "x2" (padding.left + chartWidth)
-          , staticNum "y2" (padding.top + chartHeight)
-          , staticStr "stroke" "#666"
-          , staticNum "stroke-width" 1.0
+          [ x1 padding.left
+          , y1 (padding.top + chartHeight)
+          , x2 (padding.left + chartWidth)
+          , y2 (padding.top + chartHeight)
+          , stroke "#666"
+          , strokeWidth 1.0
           ]
           []
       , -- X-axis labels
         elem Text
-          [ staticNum "x" padding.left
-          , staticNum "y" (config.height - 5.0)
-          , staticStr "font-size" "11"
-          , staticStr "fill" "#666"
-          , staticStr "textContent" "← Earlier"
+          [ x padding.left
+          , y (config.height - 5.0)
+          , fontSize "11"
+          , fill "#666"
+          , attr "textContent" "← Earlier"
           ]
           []
       , elem Text
-          [ staticNum "x" (padding.left + chartWidth)
-          , staticNum "y" (config.height - 5.0)
-          , staticStr "text-anchor" "end"
-          , staticStr "font-size" "11"
-          , staticStr "fill" "#666"
-          , staticStr "textContent" "Later →"
+          [ x (padding.left + chartWidth)
+          , y (config.height - 5.0)
+          , textAnchor "end"
+          , fontSize "11"
+          , fill "#666"
+          , attr "textContent" "Later →"
           ]
           []
       , -- Y-axis title
         elem Text
-          [ staticNum "x" 12.0
-          , staticNum "y" (padding.top + chartHeight / 2.0)
-          , staticStr "font-size" "11"
-          , staticStr "fill" "#666"
-          , staticStr "transform" ("rotate(-90, 12, " <> show (padding.top + chartHeight / 2.0) <> ")")
-          , staticStr "text-anchor" "middle"
-          , staticStr "textContent" "Queue Depth"
+          [ x 12.0
+          , y (padding.top + chartHeight / 2.0)
+          , fontSize "11"
+          , fill "#666"
+          , transform ("rotate(-90, 12, " <> show (padding.top + chartHeight / 2.0) <> ")")
+          , textAnchor "middle"
+          , attr "textContent" "Queue Depth"
           ]
           []
       ]
@@ -257,9 +260,9 @@ buildAreaPath scaleX scaleY chartHeight padding points =
 
         -- Line through all points (step function for queue depth)
         lineSegments = tail <#> \pt ->
-          let x = scaleX pt.time
-              y = scaleY pt.depth
-          in "L " <> show x <> " " <> show y
+          let ptX = scaleX pt.time
+              ptY = scaleY pt.depth
+          in "L " <> show ptX <> " " <> show ptY
 
         -- Close back to baseline
         lastPoint = Array.last points

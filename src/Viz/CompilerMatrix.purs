@@ -17,7 +17,8 @@ import Data.Maybe (fromMaybe)
 import Effect (Effect)
 
 -- Hylograph HATS Imports
-import Hylograph.HATS (Tree, elem, staticStr, staticNum)
+import Hylograph.HATS (Tree, elem)
+import Hylograph.HATS.Friendly (attr, attrNum, viewBox, x, y, width, height, fill, stroke, class_, style, transform, textAnchor, fontSize, fontFamily)
 import Hylograph.HATS.InterpreterTick (rerender)
 import Hylograph.Internal.Selection.Types (ElementType(..))
 
@@ -150,16 +151,16 @@ buildCells config offsetX offsetY matrix =
     let
       packageName = fromMaybe "" $ matrix.packages !! rowIdx
       compilerVersion = fromMaybe "" $ matrix.compilers !! colIdx
-      x = offsetX + toNumber colIdx * config.cellWidth
-      y = offsetY + toNumber rowIdx * config.cellHeight
+      cellX = offsetX + toNumber colIdx * config.cellWidth
+      cellY = offsetY + toNumber rowIdx * config.cellHeight
     in
       { row: rowIdx
       , col: colIdx
       , value
       , packageName
       , compilerVersion
-      , x
-      , y
+      , x: cellX
+      , y: cellY
       , width: config.cellWidth
       , height: config.cellHeight
       , color: interpolateRdYlGn value
@@ -193,82 +194,76 @@ buildColLabels config gridOffsetX compilers = mapWithIndex buildLabel compilers
 
 buildMatrixTree :: Config -> MatrixLayout -> Tree
 buildMatrixTree _config layout =
-  let
-    viewBox = "0 0 " <> show layout.totalWidth <> " " <> show layout.totalHeight
-  in
-    elem SVG
-      [ staticStr "id" "matrix-svg"
-      , staticStr "viewBox" viewBox
-      , staticStr "width" (show layout.totalWidth)
-      , staticStr "height" (show layout.totalHeight)
-      , staticStr "style" "background: transparent; display: block;"
-      ]
-      [ -- Grid background (light theme)
-        elem Rect
-          [ staticNum "x" layout.gridOffsetX
-          , staticNum "y" layout.gridOffsetY
-          , staticNum "width" layout.gridWidth
-          , staticNum "height" layout.gridHeight
-          , staticStr "fill" "#f8f8f8"
-          , staticStr "stroke" "#e0e0e0"
-          ] []
-      , -- Cells group
-        elem Group
-          [ staticStr "class" "cells" ]
-          (layout.cells <#> renderCell)
-      , -- Row labels group
-        elem Group
-          [ staticStr "class" "row-labels" ]
-          (layout.rowLabels <#> renderRowLabel)
-      , -- Column labels group
-        elem Group
-          [ staticStr "class" "col-labels" ]
-          (layout.colLabels <#> renderColLabel)
-      ]
+  elem SVG
+    [ attr "id" "matrix-svg"
+    , viewBox 0.0 0.0 layout.totalWidth layout.totalHeight
+    , width layout.totalWidth
+    , height layout.totalHeight
+    , style "background: transparent; display: block;"
+    ]
+    [ -- Grid background (light theme)
+      elem Rect
+        [ x layout.gridOffsetX
+        , y layout.gridOffsetY
+        , width layout.gridWidth
+        , height layout.gridHeight
+        , fill "#f8f8f8"
+        , stroke "#e0e0e0"
+        ] []
+    , -- Cells group
+      elem Group
+        [ class_ "cells" ]
+        (layout.cells <#> renderCell)
+    , -- Row labels group
+      elem Group
+        [ class_ "row-labels" ]
+        (layout.rowLabels <#> renderRowLabel)
+    , -- Column labels group
+      elem Group
+        [ class_ "col-labels" ]
+        (layout.colLabels <#> renderColLabel)
+    ]
 
 renderCell :: MatrixCell -> Tree
 renderCell cell =
   elem Rect
-    [ staticStr "class" "matrix-cell"
-    , staticNum "x" cell.x
-    , staticNum "y" cell.y
-    , staticNum "width" (cell.width - 2.0)
-    , staticNum "height" (cell.height - 2.0)
-    , staticStr "fill" cell.color
-    , staticNum "rx" 2.0
-    , staticStr "data-package" cell.packageName
-    , staticStr "data-compiler" cell.compilerVersion
-    , staticNum "data-value" cell.value
+    [ class_ "matrix-cell"
+    , x cell.x
+    , y cell.y
+    , width (cell.width - 2.0)
+    , height (cell.height - 2.0)
+    , fill cell.color
+    , attrNum "rx" 2.0
+    , attr "data-package" cell.packageName
+    , attr "data-compiler" cell.compilerVersion
+    , attrNum "data-value" cell.value
     ] []
 
 renderRowLabel :: RowLabel -> Tree
 renderRowLabel label =
   elem Text
-    [ staticStr "class" "row-label"
-    , staticNum "x" label.x
-    , staticNum "y" label.y
-    , staticStr "text-anchor" "end"
-    , staticStr "dominant-baseline" "middle"
-    , staticStr "fill" "#333333"
-    , staticStr "font-size" "11px"
-    , staticStr "font-family" "ui-monospace, SFMono-Regular, Menlo, Monaco, monospace"
-    , staticStr "textContent" label.name
+    [ class_ "row-label"
+    , x label.x
+    , y label.y
+    , textAnchor "end"
+    , attr "dominant-baseline" "middle"
+    , fill "#333333"
+    , fontSize "11px"
+    , fontFamily "ui-monospace, SFMono-Regular, Menlo, Monaco, monospace"
+    , attr "textContent" label.name
     ] []
 
 renderColLabel :: ColLabel -> Tree
 renderColLabel label =
-  let
-    transform = "rotate(-45," <> show label.x <> "," <> show label.y <> ")"
-  in
-    elem Text
-      [ staticStr "class" "col-label"
-      , staticNum "x" label.x
-      , staticNum "y" label.y
-      , staticStr "text-anchor" "start"
-      , staticStr "dominant-baseline" "middle"
-      , staticStr "transform" transform
-      , staticStr "fill" "#333333"
-      , staticStr "font-size" "11px"
-      , staticStr "font-family" "ui-monospace, SFMono-Regular, Menlo, Monaco, monospace"
-      , staticStr "textContent" label.name
-      ] []
+  elem Text
+    [ class_ "col-label"
+    , x label.x
+    , y label.y
+    , textAnchor "start"
+    , attr "dominant-baseline" "middle"
+    , transform ("rotate(-45," <> show label.x <> "," <> show label.y <> ")")
+    , fill "#333333"
+    , fontSize "11px"
+    , fontFamily "ui-monospace, SFMono-Regular, Menlo, Monaco, monospace"
+    , attr "textContent" label.name
+    ] []

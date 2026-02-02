@@ -19,7 +19,8 @@ import Data.Number (sqrt)
 import Effect (Effect)
 
 -- Hylograph HATS Imports
-import Hylograph.HATS (Tree, elem, staticStr, staticNum, thunkedStr, thunkedNum, forEach)
+import Hylograph.HATS (Tree, elem, thunkedStr, thunkedNum, forEach)
+import Hylograph.HATS.Friendly (attr, x1, y1, x2, y2, x, y, stroke, strokeWidth, fill, class_, style, textAnchor, fontSize, opacity)
 import Hylograph.HATS.InterpreterTick (rerender, clearContainer)
 import Hylograph.Internal.Selection.Types (ElementType(..))
 import Hylograph.Simulation.HATS (tickUpdate)
@@ -139,25 +140,25 @@ prepareNode config timeRange idx job =
     targetX = padding + t * availableWidth - config.width / 2.0
 
     -- Radius based on job duration (longer jobs = bigger circles)
-    r = 4.0 + sqrt (job.duration / 30.0) * 3.0
+    radius = 4.0 + sqrt (job.duration / 30.0) * 3.0
 
     -- Color based on status
     color = statusColor job.status
 
     -- Initial random y position
     pseudoRandom = toNumber ((idx * 17 + 31) `mod` 100) / 100.0 - 0.5
-    y = pseudoRandom * config.height * 0.6
+    initY = pseudoRandom * config.height * 0.6
   in
     { id: job.id
     , x: targetX
-    , y
+    , y: initY
     , vx: 0.0
     , vy: 0.0
     , fx: Nullable.null
     , fy: Nullable.null
     , job
     , targetX
-    , r
+    , r: radius
     , color
     }
 
@@ -175,51 +176,51 @@ renderSVGContainer config = do
   let
     vbX = -config.width / 2.0
     vbY = -config.height / 2.0
-    viewBox = show vbX <> " " <> show vbY <> " " <> show config.width <> " " <> show config.height
+    viewBoxStr = show vbX <> " " <> show vbY <> " " <> show config.width <> " " <> show config.height
 
     containerTree :: Tree
     containerTree =
       elem SVG
-        [ staticStr "id" "job-beeswarm-svg"
-        , staticStr "viewBox" viewBox
-        , staticStr "width" "100%"
-        , staticStr "height" (show config.height)
-        , staticStr "preserveAspectRatio" "xMidYMid meet"
-        , staticStr "style" "display: block;"
+        [ attr "id" "job-beeswarm-svg"
+        , attr "viewBox" viewBoxStr
+        , attr "width" "100%"
+        , attr "height" (show config.height)
+        , attr "preserveAspectRatio" "xMidYMid meet"
+        , style "display: block;"
         ]
         [ -- Axis line
           elem Line
-            [ staticNum "x1" (-config.width / 2.0 + 50.0)
-            , staticNum "y1" 0.0
-            , staticNum "x2" (config.width / 2.0 - 50.0)
-            , staticNum "y2" 0.0
-            , staticStr "stroke" "#e0e0e0"
-            , staticNum "stroke-width" 1.0
+            [ x1 (-config.width / 2.0 + 50.0)
+            , y1 0.0
+            , x2 (config.width / 2.0 - 50.0)
+            , y2 0.0
+            , stroke "#e0e0e0"
+            , strokeWidth 1.0
             ]
             []
         , -- Left label (older)
           elem Text
-            [ staticNum "x" (-config.width / 2.0 + 55.0)
-            , staticNum "y" (config.height / 2.0 - 15.0)
-            , staticStr "font-size" "11"
-            , staticStr "fill" "#666"
-            , staticStr "textContent" "← Older jobs"
+            [ x (-config.width / 2.0 + 55.0)
+            , y (config.height / 2.0 - 15.0)
+            , fontSize "11"
+            , fill "#666"
+            , attr "textContent" "← Older jobs"
             ]
             []
         , -- Right label (newer)
           elem Text
-            [ staticNum "x" (config.width / 2.0 - 55.0)
-            , staticNum "y" (config.height / 2.0 - 15.0)
-            , staticStr "text-anchor" "end"
-            , staticStr "font-size" "11"
-            , staticStr "fill" "#666"
-            , staticStr "textContent" "Newer jobs →"
+            [ x (config.width / 2.0 - 55.0)
+            , y (config.height / 2.0 - 15.0)
+            , textAnchor "end"
+            , fontSize "11"
+            , fill "#666"
+            , attr "textContent" "Newer jobs →"
             ]
             []
         , -- Jobs container
           elem Group
-            [ staticStr "id" "beeswarm-jobs"
-            , staticStr "class" "jobs"
+            [ attr "id" "beeswarm-jobs"
+            , class_ "jobs"
             ]
             []
         ]
@@ -239,25 +240,26 @@ createJobNodesTree config nodes =
   nodeKey :: JobNode -> String
   nodeKey n = show n.id
 
+-- | Job node with thunked attributes for simulation updates
 jobNodeHATS :: Config -> JobNode -> Tree
 jobNodeHATS _config node =
   elem Group
     [ thunkedStr "transform" ("translate(" <> show node.x <> "," <> show node.y <> ")")
-    , staticStr "class" "job-group"
+    , class_ "job-group"
     , thunkedStr "data-id" (show node.id)
     , thunkedStr "data-package" node.job.package
     , thunkedStr "data-compiler" node.job.compiler
     ]
     [ elem Circle
-        [ staticStr "cx" "0"
-        , staticStr "cy" "0"
+        [ attr "cx" "0"
+        , attr "cy" "0"
         , thunkedNum "r" node.r
         , thunkedStr "fill" node.color
-        , staticStr "stroke" "#333"
-        , staticStr "stroke-width" "0.5"
-        , staticStr "opacity" "0.85"
-        , staticStr "cursor" "pointer"
-        , staticStr "class" "job-circle"
+        , stroke "#333"
+        , strokeWidth 0.5
+        , opacity "0.85"
+        , attr "cursor" "pointer"
+        , class_ "job-circle"
         ]
         []
     ]
